@@ -6,11 +6,18 @@
  *
  */
 
-// definir conexoes dos pinos
-int pin_relay = 6;
-int pin_umidadesolo = A0;
-int valor_umidadesolo ;
+// incluir pacotes
+#include <dht.h>
+dht DHT;
 
+// definir conexoes dos pinos e variaveis 
+const int pin_relay = 6;
+const int pin_umidadesolo = A0;
+const int pin_dht = 5;
+const int pin_ldr = A1;
+
+int valor_umidadesolo;
+int valor_ldr;
 
 void setup() {
   
@@ -18,29 +25,46 @@ void setup() {
   Serial.println("Inicializando sistema");
 
   // definir pin do relay como output
-  pinMode(pin_relay,OUTPUT);
+  pinMode(pin_relay, OUTPUT);
 
 }
 
 
 void loop() {
 
-  // desligar relay 
+  //--------------------- LEITURAS
+
+  // inicar com relay inativo 
   digitalWrite(pin_relay,1);  
 
-  // verificar umidade do solo
+  // ler umidade do solo
+  valor_ldr = analogRead(pin_ldr);
+
+  // ler umidade do solo
   valor_umidadesolo = analogRead(pin_umidadesolo);
   valor_umidadesolo = map(valor_umidadesolo,550,0,0,100);
 
-  Serial.print("Umidade do Solo : ");Serial.print(valor_umidadesolo);Serial.println("%");
+  // ler DHT
+  int chk = DHT.read11(pin_dht);
 
-      if (valor_umidadesolo < 30){
-        Serial.println("Ligar bomba de água:");
+//--------------------- PRINT DAS INFORMACOES NO SERIAL
+    
+// printar valores no serial
+  Serial.print("Umidade do Solo: ");Serial.print(valor_umidadesolo);Serial.println("%");
+  Serial.print("Umidade do Ar: ");Serial.print(DHT.humidity);Serial.println("");
+  Serial.print("Temperatura: ");Serial.print(DHT.temperature);Serial.println("");
+  Serial.print("Luminosidade: ");Serial.print(valor_ldr);Serial.println("");
+
+//--------------------- ACIONAR BOMBA DE AGUA
+
+      if (valor_umidadesolo < 60){
+        Serial.println("LIGAR BOMBA"); Serial.println("");
         digitalWrite(pin_relay, 0);   
-        delay(7000); // ligar agua por 7 sec
+        delay(5); // ligar agua por 5 segundos
         } 
 
-    delay(1000*60*10); // 10min delay
+
+delay(1000*6); // 10min delay [experimento rodando com 6 seg, multiplicar por 100 pra chegar em 10min]
   
 
 }
