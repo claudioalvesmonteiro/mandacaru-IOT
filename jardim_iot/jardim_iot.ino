@@ -29,7 +29,6 @@ int valor_ldr;
 DHT dht (pin_dht, DHTTYPE);
 
 void setupPins(){
-  Serial.begin (115200);
   pinMode(pin_relay1, OUTPUT);
   pinMode(pin_relay2, OUTPUT);
   dht.begin(); 
@@ -57,7 +56,7 @@ void setupFirebase(){
 }
 
 void setup() {
-  Serial.begin(500);
+  Serial.begin (115200);
   setupPins();
   setupWifi();    
   setupFirebase();
@@ -70,13 +69,17 @@ void loop() {
     float h = dht.readHumidity();
     float t = dht.readTemperature();
 
-    // verifica o valor da lampada no firebase 
+    // enviar dados dos sensores
+    Firebase.pushInt("temperature", t); 
+    Firebase.pushFloat("humidity", h); 
+
+    // puxar o valor da lampada no firebase 
     bool lampValue = Firebase.getBool("lamp");
 
     // controle do relay
     digitalWrite(pin_relay1, lampValue ? HIGH : LOW);   
     digitalWrite(pin_relay2, lampValue ? HIGH : LOW);  
-    delay(5000);
+    delay(10000);
 
     // visualizar informacoes na tela
       Serial.print("Lamp Firebase: ");Serial.println(Firebase.getBool("lamp"));
